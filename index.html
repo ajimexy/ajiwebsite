@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ajidingzpzzweb</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('https://i.ibb.co.com/Z6b65k9N/ajiisexy.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    h2 {
+      margin-bottom: 15px;
+    }
+    input, button, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #00bcd4;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #0097a7;
+    }
+    .hidden {
+      display: none;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid white;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="loginPage">
+    <img src="https://i.ibb.co.com/Cs7k8GbQ/394a325fa201dfad69a92215e48727c8.jpg" alt="Profile" class="profile-pic">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Masukkan Username">
+    <input type="password" id="password" placeholder="Masukkan Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div class="container hidden" id="mainMenu">
+    <h2>Converter TXT ke VCF</h2>
+    <input type="file" id="txtFile" accept=".txt">
+    <input type="text" id="contactName" placeholder="Masukkan Nama Kontak">
+    <input type="number" id="contactsPerFile" placeholder="Jumlah kontak per file (misal 50)">
+    <button onclick="convertToVCF()">Convert & Download</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function login() {
+      let user = document.getElementById('username').value;
+      let pass = document.getElementById('password').value;
+      if (user && pass) {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('mainMenu').classList.remove('hidden');
+      } else {
+        alert("Isi username dan password terlebih dahulu!");
+      }
+    }
+
+    function convertToVCF() {
+      let fileInput = document.getElementById('txtFile').files[0];
+      let contactName = document.getElementById('contactName').value || "Kontak";
+      let perFile = parseInt(document.getElementById('contactsPerFile').value) || 50;
+
+      if (!fileInput) {
+        alert("Pilih file TXT terlebih dahulu!");
+        return;
+      }
+
+      let reader = new FileReader();
+      reader.onload = function(e) {
+        let numbers = e.target.result.split(/\r?\n/).filter(n => n.trim() !== "");
+        let fileCount = Math.ceil(numbers.length / perFile);
+
+        for (let f = 0; f < fileCount; f++) {
+          let vcfContent = "";
+          let start = f * perFile;
+          let end = Math.min(start + perFile, numbers.length);
+
+          for (let i = start; i < end; i++) {
+            let num = numbers[i].replace(/\D/g, "");
+            vcfContent += "BEGIN:VCARD\nVERSION:3.0\n";
+            vcfContent += "FN:" + contactName + " " + (i+1) + "\n";
+            vcfContent += "TEL;TYPE=CELL:+" + num + "\n";
+            vcfContent += "END:VCARD\n";
+          }
+
+          let blob = new Blob([vcfContent], { type: "text/vcard" });
+          let link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = contactName + "_😋" + (f+1) + ".vcf";
+          link.click();
+        }
+
+        document.getElementById('result').innerText = "Berhasil convert " + numbers.length + " kontak.";
+      };
+      reader.readAsText(fileInput);
+    }
+  </script>
+</body>
+</html>
